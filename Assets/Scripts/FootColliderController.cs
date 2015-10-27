@@ -4,27 +4,15 @@ using System.Collections;
 public class FootColliderController : MonoBehaviour
 {
 
-    public GameObject player;
+    public GameObject parentGameObject;
 
-    // Use this for initialization
-    void Start()
+    void OnTriggerStay2D(Collider2D other)
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        player.SendMessage("OnFootCollides", other);
+        parentGameObject.SendMessage("OnFootCollides", other);
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        player.SendMessage("OnFootStopsColliding", other);
+        parentGameObject.SendMessage("OnFootStopsColliding", other);
     }
 }

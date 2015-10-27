@@ -1,41 +1,32 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerController : MonoBehaviour {
-
-    public GameObject spriteObject;
-
+public class PlayerController : ACharacterController
+{
     bool isGrounded = false;
     bool isJumping = false;
-    bool isMoving = false;
     bool isFalling = false;
-    string direction = "right";
+    
     float currentMaxJumpHeight = 0;
 
-    Animator _animator;
-    Rigidbody2D _rigidBody2D;
+    public float jumpSpeed = 150;
+    public float maxJumpHeight = 2f;
 
-    const float MOVE_SPEED = 200;
-    const float JUMP_SPEED = 150;
-    const float MAX_JUMP_HEIGHT = 2f;
-
-    // Use this for initialization
-    void Start ()
+    override public void Start()
     {
-        _animator = spriteObject.GetComponent<Animator>();
-        _rigidBody2D = GetComponent<Rigidbody2D>();
+        base.Start();
         IsGrounded = true;
     }
 	
-	// Update is called once per frame
-	void Update ()
+	override public void Update ()
     {
+        base.Update();
         UpdateKeyInputs();
     }
 
-    void FixedUpdate()
+    override public void FixedUpdate()
     {
-        UpdateMovement();
+        base.FixedUpdate();
         UpdateJumpMovement();
     }
 
@@ -64,25 +55,6 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    void UpdateMovement()
-    {
-        if (IsMoving)
-        {
-            if (direction == "left")
-            {
-                _rigidBody2D.velocity = new Vector2(-MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
-            }
-            else if (direction == "right")
-            {
-                _rigidBody2D.velocity = new Vector2(MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
-            }
-        }
-        else
-        {
-            _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x * 0.8f, _rigidBody2D.velocity.y);
-        }
-    }
-
     void UpdateJumpMovement()
     {
         if (IsJumping)
@@ -95,33 +67,14 @@ public class PlayerController : MonoBehaviour {
             }
             else
             {
-                Debug.Log(currentMaxJumpHeight);
-                _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x, JUMP_SPEED * (currentMaxJumpHeight / transform.position.y) * Time.fixedDeltaTime);
+                _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x, jumpSpeed * (currentMaxJumpHeight / transform.position.y) * Time.fixedDeltaTime);
             }
         }
 
         if (IsFalling)
         {
             _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x, _rigidBody2D.velocity.y - 0.1f);
-            Debug.Log(_rigidBody2D.velocity.y);
         }
-    }
-
-    void MoveLeft()
-    {
-        IsMoving = true;
-        Direction = "left";
-    }
-
-    void MoveRight()
-    {
-        IsMoving = true;
-        Direction = "right";
-    }
-
-    void StopMoving()
-    {
-        IsMoving = false;
     }
 
     void StartJumping()
@@ -134,60 +87,24 @@ public class PlayerController : MonoBehaviour {
         IsJumping = false;
     }
 
+    void OnSideCollides()
+    {
+        
+    }
+
     void OnFootCollides(Collider2D other)
     {
-        IsGrounded = true;
-        IsFalling = false;
+        if (other.gameObject.tag == "Environement")
+        {
+            IsGrounded = true;
+        }
     }
 
     void OnFootStopsColliding(Collider2D other)
     {
-        IsGrounded = false;
-    }
-
-    void OnSideCollides()
-    {
-        IsGrounded = true;
-        IsFalling = false;
-    }
-
-    public string Direction
-    {
-        get
+        if (other.gameObject.tag == "Environement")
         {
-            return direction;
-        }
-        set
-        {
-            if (direction != value)
-            {
-                if (direction == "left")
-                {
-                    direction = value;
-                    spriteObject.transform.Rotate(0, 180, 0);
-                }
-                else if (direction == "right")
-                {
-                    direction = value;
-                    spriteObject.transform.Rotate(0, -180, 0);
-                }
-            }
-        }
-    }
-
-    public bool IsMoving
-    {
-        get
-        {
-            return isMoving;
-        }
-        set
-        {
-            if (isMoving != value)
-            {
-                isMoving = value;
-                _animator.SetBool("isMoving", value);
-            }
+            IsGrounded = false;
         }
     }
 
@@ -203,6 +120,12 @@ public class PlayerController : MonoBehaviour {
             {
                 isGrounded = value;
                 _animator.SetBool("isGrounded", value);
+ 
+                // Stop falling if setting IsGrounded to true
+                if (isGrounded)
+                {
+                    IsFalling = false;
+                }
             }
         }
     }
@@ -220,10 +143,12 @@ public class PlayerController : MonoBehaviour {
                 isJumping = value;
                 _animator.SetBool("isJumping", value);
 
+                // Update max jump height from current position if setting IsJumping to true
                 if (isJumping)
                 {
-                    currentMaxJumpHeight = transform.position.y + MAX_JUMP_HEIGHT;
+                    currentMaxJumpHeight = transform.position.y + maxJumpHeight;
                 }
+                // If setting IsJumping to false and character is not grounded, character is falling
                 else if (!IsGrounded)
                 {
                     IsFalling = true;
