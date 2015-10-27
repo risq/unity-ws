@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
-    public GameObject characterSpriteObject;
+    public GameObject spriteObject;
 
     bool isGrounded = false;
     bool isJumping = false;
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
-        _animator = characterSpriteObject.GetComponent<Animator>();
+        _animator = spriteObject.GetComponent<Animator>();
         _rigidBody2D = GetComponent<Rigidbody2D>();
         IsGrounded = true;
     }
@@ -30,32 +30,60 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow) && IsGrounded)
-        {
-            IsJumping = true;
-        }
-        if (Input.GetKeyUp(KeyCode.UpArrow))
-        {
-            IsJumping = false;
-        }
-      
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            IsMoving = true;
-            Direction = "right";
-        }
-        else if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            IsMoving = true;
-            Direction = "left";
-        }
-        else
-        {
-            IsMoving = false;
-        }
+        UpdateKeyInputs();
     }
 
     void FixedUpdate()
+    {
+        UpdateMovement();
+        UpdateJumpMovement();
+    }
+
+    void UpdateKeyInputs()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow) && IsGrounded)
+        {
+            StartJumping();
+        }
+        if (Input.GetKeyUp(KeyCode.UpArrow))
+        {
+            StopJumping();
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            MoveRight();
+        }
+        else if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            MoveLeft();
+        }
+        else
+        {
+            StopMoving();
+        }
+    }
+
+    void UpdateMovement()
+    {
+        if (IsMoving)
+        {
+            if (direction == "left")
+            {
+                _rigidBody2D.velocity = new Vector2(-MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
+            }
+            else if (direction == "right")
+            {
+                _rigidBody2D.velocity = new Vector2(MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
+            }
+        }
+        else
+        {
+            _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x * 0.8f, _rigidBody2D.velocity.y);
+        }
+    }
+
+    void UpdateJumpMovement()
     {
         if (IsJumping)
         {
@@ -77,22 +105,33 @@ public class PlayerController : MonoBehaviour {
             _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x, _rigidBody2D.velocity.y - 0.1f);
             Debug.Log(_rigidBody2D.velocity.y);
         }
+    }
 
-        if (IsMoving)
-        {
-            if (direction == "left")
-            {
-                _rigidBody2D.velocity = new Vector2(-MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
-            }
-            else if (direction == "right")
-            {
-                _rigidBody2D.velocity = new Vector2(MOVE_SPEED * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
-            }
-        }
-        else
-        {
-            _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x * 0.8f, _rigidBody2D.velocity.y);
-        }
+    void MoveLeft()
+    {
+        IsMoving = true;
+        Direction = "left";
+    }
+
+    void MoveRight()
+    {
+        IsMoving = true;
+        Direction = "right";
+    }
+
+    void StopMoving()
+    {
+        IsMoving = false;
+    }
+
+    void StartJumping()
+    {
+        IsJumping = true;
+    }
+
+    void StopJumping()
+    {
+        IsJumping = false;
     }
 
     void OnFootCollides(Collider2D other)
@@ -125,12 +164,12 @@ public class PlayerController : MonoBehaviour {
                 if (direction == "left")
                 {
                     direction = value;
-                    characterSpriteObject.transform.Rotate(0, 180, 0);
+                    spriteObject.transform.Rotate(0, 180, 0);
                 }
                 else if (direction == "right")
                 {
                     direction = value;
-                    characterSpriteObject.transform.Rotate(0, -180, 0);
+                    spriteObject.transform.Rotate(0, -180, 0);
                 }
             }
         }
