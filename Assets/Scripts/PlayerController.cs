@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerController : ACharacterController
 {
+
     bool isGrounded = false;
     bool isJumping = false;
     bool isFalling = false;

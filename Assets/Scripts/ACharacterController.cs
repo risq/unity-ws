@@ -4,6 +4,7 @@ using System.Collections;
 public class ACharacterController : MonoBehaviour {
 
     public GameObject spriteObject;
+    public float directionChangeOffsetX = 0;
 
     bool isMoving = false;
     bool isDead = false;
@@ -99,11 +100,13 @@ public class ACharacterController : MonoBehaviour {
                 {
                     direction = value;
                     spriteObject.transform.Rotate(0, 180, 0);
+                    spriteObject.transform.Translate(directionChangeOffsetX, 0, 0);
                 }
                 else if (direction == "right")
                 {
                     direction = value;
                     spriteObject.transform.Rotate(0, -180, 0);
+                    spriteObject.transform.Translate(directionChangeOffsetX, 0, 0);
                 }
             }
         }
