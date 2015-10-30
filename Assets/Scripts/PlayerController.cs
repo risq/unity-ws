@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using System.Collections;
 
 public class PlayerController : ACharacterController
@@ -22,11 +23,16 @@ public class PlayerController : ACharacterController
     public Canvas scoreCanvas;
     private ScoreController scoreController;
 
+    public List<AudioClip> audiosClips;
+    AudioSource source;
+
     override public void Start()
     {
         base.Start();
         IsGrounded = true;
         scoreController = scoreCanvas.GetComponent<ScoreController>();
+
+        source = GetComponent<AudioSource>();
     }
 	
 	override public void Update ()
@@ -94,6 +100,10 @@ public class PlayerController : ACharacterController
     {
         if (!isHurt)
         {
+            if (source.isPlaying)
+                source.Stop();
+            source.PlayOneShot(audiosClips[1]);
+
             StartCoroutine(WaitHurt());
             _rigidBody2D.velocity = new Vector3(-3 * contact.normal.x, 3);
             if (!IsDead)
@@ -131,6 +141,9 @@ public class PlayerController : ACharacterController
     {
         if (collider.gameObject.tag == "Jewel")
         {
+            if (source.isPlaying)
+                source.Stop();
+            source.PlayOneShot(audiosClips[0]);
             scoreController.AddPoint();
             Destroy(collider.gameObject);
         }
@@ -176,6 +189,9 @@ public class PlayerController : ACharacterController
                 if (isJumping)
                 {
                     currentMaxJumpHeight = transform.position.y + maxJumpHeight;
+                    if (source.isPlaying)
+                        source.Stop();
+                    source.PlayOneShot(audiosClips[2]);
                 }
                 // If setting IsJumping to false and character is not grounded, character is falling
                 else if (!IsGrounded)

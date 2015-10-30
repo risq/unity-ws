@@ -3,6 +3,23 @@ using System.Collections;
 
 public class MonsterController : ACharacterController {
 
+    public ParticleSystem dieParticleSystem;
+    public GameObject explosion;
+
+    private PointEffector2D explosionEffector;
+
+    public AudioClip dieAudio;
+    AudioSource source;
+
+    public void Awake()
+    {
+        dieParticleSystem.Stop();
+        explosionEffector = explosion.GetComponent<PointEffector2D>();
+        explosionEffector.enabled = false;
+
+        source = GetComponent<AudioSource>();
+    }
+
     override public void Start ()
     {
         base.Start();
@@ -18,7 +35,7 @@ public class MonsterController : ACharacterController {
     {
         if (collider.gameObject.tag == "Ennemy")
         {
-            _rigidBody2D.AddForce(new Vector2(Random.Range(-40, 40), Random.Range(100, 200)));
+            _rigidBody2D.velocity = new Vector2(Random.Range(-4, 4), Random.Range(0, 2));
             ChangeDirection();
         }
             
@@ -34,7 +51,7 @@ public class MonsterController : ACharacterController {
             {
                 if (!IsDead)
                 {
-                    collision.rigidbody.velocity = new Vector2(collision.rigidbody.velocity.x, 4);
+                    //collision.rigidbody.velocity = new Vector2(collision.rigidbody.velocity.x, 4);
                     Damage(1);
                 }
                 
@@ -47,10 +64,24 @@ public class MonsterController : ACharacterController {
         }
     }
 
+    public void PublicDie()
+    {
+
+        Die();
+    }
+
     protected override void Die()
     {
-        base.Die();
-        Destroy(gameObject, 0.5f);
+        if (!IsDead)
+        {
+            base.Die();
+            if (source.isPlaying)
+                source.Stop();
+            source.PlayOneShot(dieAudio);
+            explosionEffector.enabled = true;
+            dieParticleSystem.Play();
+            Destroy(gameObject, 0.5f);
+        }
     }
 }
 

@@ -17,7 +17,7 @@ public class MonsterSpawnerController : MonoBehaviour {
 
     IEnumerator WaitSpawnMonster()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         Instantiate(monsterPrefab, transform.position, transform.rotation);
         StartCoroutine(WaitSpawnMonster());
     }
