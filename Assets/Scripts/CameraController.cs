@@ -4,17 +4,24 @@ using System.Collections;
 public class CameraController : MonoBehaviour {
 
     public GameObject playerObject;
+    public GameObject sceneObject;
     public float smooth = 1.5f;
-    public float minHeight = 0;
-    public float maxHeight = 1;
+
+    public float minX = 0;
+    public float maxX = 1;
+    public float minY = 0;
+    public float maxY = 1;
 
     private Transform player;
     private Vector3 relCameraPos;
     private float relCameraPosMag;
     private Vector3 newPos;
+    private Bounds sceneBounds;
+    
 
     void Awake () {
         player = playerObject.transform;
+        sceneBounds = sceneObject.GetComponent<SpriteRenderer>().sprite.bounds;
 
         relCameraPos = transform.position - player.position;
         relCameraPosMag = relCameraPos.magnitude - 0.5f;
@@ -38,11 +45,14 @@ public class CameraController : MonoBehaviour {
                 break;
         }
 
-        newPos.y = Mathf.Min(newPos.y, maxHeight);
+        newPos.x = Mathf.Max(newPos.x, minX);
+        newPos.x = Mathf.Min(newPos.x, maxX);
+        newPos.y = Mathf.Max(newPos.y, minY);
+        newPos.y = Mathf.Min(newPos.y, maxY);
+        
 
         transform.position = Vector3.Lerp(transform.position, newPos, smooth * Time.deltaTime);
     }
-
 
     bool ViewingPosCheck(Vector3 checkPos)
     {

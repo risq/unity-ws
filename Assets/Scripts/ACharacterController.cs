@@ -11,7 +11,13 @@ public class ACharacterController : MonoBehaviour {
 
     string direction = "right";
 
-    public float moveSpeed = 200;
+    public float moveSpeed = 10;
+    public float maxSpeed = 2;
+
+    float currentSpeed = 0;
+
+    [SerializeField]
+    int life = 1;
 
     protected Animator _animator;
     protected Rigidbody2D _rigidBody2D;
@@ -32,38 +38,49 @@ public class ACharacterController : MonoBehaviour {
         UpdateMovement();
     }
 
-    void UpdateMovement()
+    virtual protected void UpdateMovement()
     {
+        Vector2 velocity = _rigidBody2D.velocity;
         if (IsMoving)
         {
-            if (direction == "left")
+            if (Direction == "left")
             {
-                _rigidBody2D.velocity = new Vector2(-moveSpeed * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
+                velocity.x -= moveSpeed * Time.fixedDeltaTime;
+                velocity.x = Mathf.Max(velocity.x, -maxSpeed);
             }
-            else if (direction == "right")
+            else if (Direction == "right")
             {
-                _rigidBody2D.velocity = new Vector2(moveSpeed * Time.fixedDeltaTime, _rigidBody2D.velocity.y);
+                velocity.x += moveSpeed * Time.fixedDeltaTime;
+                velocity.x = Mathf.Min(velocity.x, maxSpeed);
             }
         }
         else
         {
-            _rigidBody2D.velocity = new Vector2(_rigidBody2D.velocity.x * 0.8f, _rigidBody2D.velocity.y);
+            velocity.x *= 0.9f;
         }
+
+        CurrentSpeed = Mathf.Abs(velocity.x);
+        _rigidBody2D.velocity = velocity;
     }
 
-    public void MoveLeft()
+    protected void Damage(int amount)
+    {
+        Life -= amount;
+    }
+
+    protected void MoveLeft()
     {
         IsMoving = true;
         Direction = "left";
     }
 
-    public void MoveRight()
+    protected void MoveRight()
     {
         IsMoving = true;
         Direction = "right";
     }
 
-    public void ChangeDirection()
+    protected void ChangeDirection()
     {
         if (Direction == "left")
         {
@@ -75,15 +92,14 @@ public class ACharacterController : MonoBehaviour {
         }
     }
 
-    public void StopMoving()
+    protected void StopMoving()
     {
         IsMoving = false;
     }
 
-    public void Die()
+    virtual protected void Die()
     {
         IsDead = true;
-        Destroy(gameObject, 0.5f);
     }
 
     public string Direction
@@ -139,8 +155,43 @@ public class ACharacterController : MonoBehaviour {
             if (isDead != value)
             {
                 isDead = value;
-                _animator.SetBool("isDead", value);
+                _animator.SetTrigger("die");
             }
+        }
+    }
+
+    public float CurrentSpeed
+    {
+        get
+        {
+            return currentSpeed;
+        }
+        set
+        {
+            if (currentSpeed != value)
+            {
+                currentSpeed = value;
+                _animator.SetFloat("currentSpeed", currentSpeed);
+            }
+        }
+    }
+
+    public int Life
+    {
+        get
+        {
+            return life;
+        }
+        set
+        {
+            if (value <= 0)
+            {
+                life = 0;
+                Die();
+            }
+            else
+                life = value;
+         
         }
     }
 }

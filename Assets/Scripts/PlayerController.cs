@@ -7,8 +7,14 @@ public class PlayerController : ACharacterController
     bool isGrounded = false;
     bool isJumping = false;
     bool isFalling = false;
+    bool isHurt = false;
+
+    const float HURT_TIME = 1;
     
     float currentMaxJumpHeight = 0;
+
+    public bool isCollidingEnvironement = false;
+    public string environementCollisionDirection;
 
     public float jumpSpeed = 150;
     public float maxJumpHeight = 2f;
@@ -21,25 +27,29 @@ public class PlayerController : ACharacterController
 	
 	override public void Update ()
     {
-        base.Update();
         UpdateKeyInputs();
     }
 
     override public void FixedUpdate()
     {
-        base.FixedUpdate();
+        if (!isHurt)
+        {
+            base.FixedUpdate();
+        }
         UpdateJumpMovement();
+
+        
     }
 
     void UpdateKeyInputs()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow) && IsGrounded)
         {
-            StartJumping();
+            IsJumping = true;
         }
         if (Input.GetKeyUp(KeyCode.UpArrow))
         {
-            StopJumping();
+            IsJumping = false;
         }
 
         if (Input.GetKey(KeyCode.RightArrow))
@@ -78,19 +88,25 @@ public class PlayerController : ACharacterController
         }
     }
 
-    void StartJumping()
+    public void Hurt(ContactPoint2D contact)
     {
-        IsJumping = true;
-    }
-
-    void StopJumping()
-    {
-        IsJumping = false;
-    }
-
-    void OnSideCollides()
-    {
+        if (!isHurt)
+        {
+            StartCoroutine(WaitHurt());
+            _rigidBody2D.velocity = new Vector3(-3 * contact.normal.x, 3);
+            if (!IsDead)
+            {
+                Damage(1);
+            }
+        }
         
+    }
+
+    IEnumerator WaitHurt()
+    {
+        IsHurt = true;
+        yield return new WaitForSeconds(HURT_TIME);
+        IsHurt = false;
     }
 
     void OnFootCollides(Collider2D other)
@@ -171,6 +187,22 @@ public class PlayerController : ACharacterController
             {
                 isFalling = value;
                 _animator.SetBool("isFalling", value);
+            }
+        }
+    }
+
+    public bool IsHurt
+    {
+        get
+        {
+            return isHurt;
+        }
+        set
+        {
+            if (isHurt != value)
+            {
+                isHurt = value;
+                _animator.SetBool("isHurt", value);
             }
         }
     }
