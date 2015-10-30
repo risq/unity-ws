@@ -9,7 +9,7 @@ public class PlayerController : ACharacterController
     bool isFalling = false;
     bool isHurt = false;
 
-    const float HURT_TIME = 1;
+    const float HURT_TIME = 0.5f;
     
     float currentMaxJumpHeight = 0;
 
@@ -19,10 +19,14 @@ public class PlayerController : ACharacterController
     public float jumpSpeed = 150;
     public float maxJumpHeight = 2f;
 
+    public Canvas scoreCanvas;
+    private ScoreController scoreController;
+
     override public void Start()
     {
         base.Start();
         IsGrounded = true;
+        scoreController = scoreCanvas.GetComponent<ScoreController>();
     }
 	
 	override public void Update ()
@@ -35,10 +39,8 @@ public class PlayerController : ACharacterController
         if (!isHurt)
         {
             base.FixedUpdate();
+            UpdateJumpMovement();
         }
-        UpdateJumpMovement();
-
-        
     }
 
     void UpdateKeyInputs()
@@ -124,6 +126,16 @@ public class PlayerController : ACharacterController
             IsGrounded = false;
         }
     }
+
+    public void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.gameObject.tag == "Jewel")
+        {
+            scoreController.AddPoint();
+            Destroy(collider.gameObject);
+        }
+    }
+
 
     public bool IsGrounded
     {

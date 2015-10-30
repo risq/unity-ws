@@ -17,7 +17,11 @@ public class MonsterController : ACharacterController {
     public void OnSideCollides(Collider2D collider)
     {
         if (collider.gameObject.tag == "Ennemy")
+        {
             _rigidBody2D.AddForce(new Vector2(Random.Range(-40, 40), Random.Range(100, 200)));
+            ChangeDirection();
+        }
+            
 
         else if (collider.gameObject.tag == "Environement")
             ChangeDirection();            
